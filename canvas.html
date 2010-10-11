@@ -1,0 +1,33 @@
+<html>
+  <head><title>Canvas stuff</title>
+    <script>
+var imgs = [];
+var imgURLs = ["http://farm1.static.flickr.com/162/416152814_8f7ffb4bb1_z.jpg"];
+function init() {
+  // Load images.
+  imgURLs.map(function(val,i,arr) {
+    var img = new Image();
+    img.onload = function () {
+      arr.shift();
+      // Case of all images done loading.
+      if (arr.length == 0) {
+        drawImages();
+      }
+    };
+    img.src = val;
+    imgs[i] = img;
+  });
+}
+
+function drawImages() {
+  var ctx = document.getElementById("main").getContext("2d");
+  imgs.forEach(function(img) {
+    ctx.drawImage(img,0,0);
+  });
+}
+    </script>
+  </head>
+  <body onload="init()">
+    <canvas id="main" width="800" height="800"></canvas>
+  </body>
+</html>
