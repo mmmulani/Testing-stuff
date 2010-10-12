@@ -27,15 +27,21 @@ canvas {
 <script>
 'use strict';
 
-var IMG_SRC = 'sf.png';
+function init() {
+  var canvas = document.getElementById('canvas');
+  canvas.addEventListener('click', lomo, false);
+  //canvas.addEventListener('dragover',)
+  //canvas.addEventListener('drop')
+  
+  load('sf.png');
+}
 
-function load() {
+function load(src) {
   var image = new Image;
   image.onload = function() {
     draw(this);
-    document.getElementById('canvas').addEventListener('click', lomo, false);
   };
-  image.src = IMG_SRC;
+  image.src = src;
 }
 
 function draw(image) {
@@ -48,9 +54,10 @@ function draw(image) {
 }
 
 function lomo() {
-  //this.removeEventListener('click', lomo, false);
-
   var canvas = document.getElementById('canvas');
+  if (!canvas.image)
+    return;
+
   var context = canvas.getContext('2d');
   context.drawImage(canvas.image, 0, 0);
 
@@ -70,8 +77,8 @@ function lomo() {
   for (row = 0; row < h; row++) {
     for (col = 0; col < w; col++) {
       pxls.data[(row * w + col) * 4 + 3] =
-        Math.sqrt((w / 2 - Math.abs(col - w / 2)) / w * 3) *
-        Math.sqrt((h / 2 - Math.abs(row - h / 2)) / h * 3) *
+        (1 - Math.pow((col - w / 2) / w * 2, 4)) *
+        (1 - Math.pow((row - h / 2) / h * 2, 4)) *
         255 + 16;
     }
   }
@@ -79,7 +86,7 @@ function lomo() {
   context.putImageData(pxls, 0, 0);
 }
 
-window.addEventListener('load', load, false);
+window.addEventListener('load', init, false);
 </script>
 </head>
 <body>
