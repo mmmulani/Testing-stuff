@@ -30,7 +30,8 @@ function load() {
   var image = new Image;
   image.onload = function() {
     draw(this);
-    lomo();
+    window.addEventListener('mousemove', lomo, false);
+    //lomo();
   };
   image.src = src;
 }
@@ -39,15 +40,33 @@ function draw(image) {
   var canvas = document.getElementById('canvas');
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(image, 0, 0);
+  var context = canvas.getContext('2d');
+  context.drawImage(image, 0, 0);
 }
 
-function lomo() {
+function lomo(event) {
+  if (window.drawing)
+    return;
+  window.drawing = true;
+  var multiplier = event.clientX / innerWidth * 2;
   var canvas = document.getElementById('canvas');
-  var ctx = canvas.getContext('2d');
-  var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  console.log()
+  var context = canvas.getContext('2d');
+  if (!window.orig)
+    window.orig = context.getImageData(0, 0, canvas.width, canvas.height);
+  var pxls = context.createImageData(canvas.width, canvas.height);
+  var row, col, i;
+  window.drawing = true;
+  for (row = 0; row < canvas.height; row++) {
+    for (col = 0; col < canvas.width; col++) {
+      i = row * canvas.width * 4 + col * 4;
+      pxls.data[i + 0] = ~~Math.min(255, orig.data[i + 0] * multiplier);
+      pxls.data[i + 1] = ~~Math.min(255, orig.data[i + 1] * multiplier);
+      pxls.data[i + 2] = ~~Math.min(255, orig.data[i + 2] * multiplier);
+      pxls.data[i + 3] = 255;
+    }
+  }
+  context.putImageData(pxls, 0, 0);
+  window.drawing = false;
 }
 
 window.addEventListener('load', load, false);
