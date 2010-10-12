@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1" />
 <title>Lomogram</title>
 <style>
 html {
@@ -20,20 +19,23 @@ body {
 noscript {
   font-size: 1em;
 }
+canvas {
+  cursor: crosshair;
+}
 </style>
+<script src="darkroom.js"></script>
 <script>
 'use strict';
 
-var src = 'suzhou.jpg';
+var IMG_SRC = 'sf.png';
 
 function load() {
   var image = new Image;
   image.onload = function() {
     draw(this);
-    window.addEventListener('mousemove', lomo, false);
-    //lomo();
+    document.getElementById('canvas').addEventListener('click', lomo, false);
   };
-  image.src = src;
+  image.src = IMG_SRC;
 }
 
 function draw(image) {
@@ -42,31 +44,39 @@ function draw(image) {
   canvas.height = image.naturalHeight;
   var context = canvas.getContext('2d');
   context.drawImage(image, 0, 0);
+  canvas.image = image;
 }
 
-function lomo(event) {
-  if (window.drawing)
-    return;
-  window.drawing = true;
-  var multiplier = event.clientX / innerWidth * 2;
+function lomo() {
+  //this.removeEventListener('click', lomo, false);
+
   var canvas = document.getElementById('canvas');
   var context = canvas.getContext('2d');
-  if (!window.orig)
-    window.orig = context.getImageData(0, 0, canvas.width, canvas.height);
-  var pxls = context.createImageData(canvas.width, canvas.height);
-  var row, col, i;
-  window.drawing = true;
-  for (row = 0; row < canvas.height; row++) {
-    for (col = 0; col < canvas.width; col++) {
-      i = row * canvas.width * 4 + col * 4;
-      pxls.data[i + 0] = ~~Math.min(255, orig.data[i + 0] * multiplier);
-      pxls.data[i + 1] = ~~Math.min(255, orig.data[i + 1] * multiplier);
-      pxls.data[i + 2] = ~~Math.min(255, orig.data[i + 2] * multiplier);
-      pxls.data[i + 3] = 255;
+  context.drawImage(canvas.image, 0, 0);
+
+  canvas.lomo = !canvas.lomo;
+  // XXX hack for vignette
+  canvas.style.backgroundColor = canvas.lomo ? '#000' : '';
+  if (!canvas.lomo)
+    return;
+
+  var pxls = context.getImageData(0, 0, canvas.width, canvas.height);
+  
+  // apply basic filters
+  ProcessImageData(pxls, { contrast: 1.2, saturation: 1.2, temperature: 300 });
+
+  // so-so vignette
+  var w = canvas.width, h = canvas.height, row, col, i;
+  for (row = 0; row < h; row++) {
+    for (col = 0; col < w; col++) {
+      pxls.data[(row * w + col) * 4 + 3] =
+        Math.sqrt((w / 2 - Math.abs(col - w / 2)) / w * 3) *
+        Math.sqrt((h / 2 - Math.abs(row - h / 2)) / h * 3) *
+        255 + 16;
     }
   }
+  
   context.putImageData(pxls, 0, 0);
-  window.drawing = false;
 }
 
 window.addEventListener('load', load, false);
