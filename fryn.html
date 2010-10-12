@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1" />
+<title>Lomogram</title>
+<style>
+html {
+  display: table;
+  width: 100%;
+  height: 100%;
+}
+body {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0;
+  font-size: 0;
+}
+noscript {
+  font-size: 1em;
+}
+</style>
+<script>
+'use strict';
+
+var src = 'suzhou.jpg';
+
+function load() {
+  var image = new Image;
+  image.onload = function() {
+    draw(this);
+    lomo();
+  };
+  image.src = src;
+}
+
+function draw(image) {
+  var canvas = document.getElementById('canvas');
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0);
+}
+
+function lomo() {
+  var canvas = document.getElementById('canvas');
+  var ctx = canvas.getContext('2d');
+  var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  console.log()
+}
+
+window.addEventListener('load', load, false);
+</script>
+</head>
+<body>
+<noscript>
+  For full functionality of this site, it is necessary to enable JavaScript.
+  Here are the <a href="http://enable-javascript.com" target="_blank">
+  instructions on how to enable JavaScript in your web browser</a>.
+</noscript>
+<canvas id="canvas"></canvas>
+<div></div>
+</body>
+</html>
