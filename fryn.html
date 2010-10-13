@@ -30,16 +30,18 @@ canvas {
 function init() {
   var canvas = document.getElementById('canvas');
   canvas.addEventListener('click', lomo, false);
-  //canvas.addEventListener('dragover',)
-  //canvas.addEventListener('drop')
+  canvas.addEventListener('dragenter', want, false);
+  canvas.addEventListener('dragover', want, false);
+  canvas.addEventListener('drop', drop, false);
   
   load('sf.png');
 }
 
-function load(src) {
+function load(src, blob) {
   var image = new Image;
   image.onload = function() {
     draw(this);
+    window.revokeBlobURL(this.src);
   };
   image.src = src;
 }
@@ -51,9 +53,10 @@ function draw(image) {
   var context = canvas.getContext('2d');
   context.drawImage(image, 0, 0);
   canvas.image = image;
+  canvas.lomo = false;
 }
 
-function lomo() {
+function lomo(event) {
   var canvas = document.getElementById('canvas');
   if (!canvas.image)
     return;
@@ -73,17 +76,40 @@ function lomo() {
   ProcessImageData(pxls, { contrast: 1.2, saturation: 1.2, temperature: 300 });
 
   // so-so vignette
-  var w = canvas.width, h = canvas.height, row, col, i;
+  var row, col;
+  var w = canvas.width, h = canvas.height;
+  var x = event.clientX - canvas.offsetLeft;
+  var y = event.clientY - canvas.offsetTop;
+  x = (x - w / 2) / 16 + w / 2;
+  y = (y - h / 2) / 16 + h / 2;
   for (row = 0; row < h; row++) {
     for (col = 0; col < w; col++) {
       pxls.data[(row * w + col) * 4 + 3] =
-        (1 - Math.pow((col - w / 2) / w * 2, 4)) *
-        (1 - Math.pow((row - h / 2) / h * 2, 4)) *
+        (1 - Math.pow((col - x) / w * 2, 4)) *
+        (1 - Math.pow((row - y) / h * 2, 4)) *
         255 + 16;
     }
   }
   
   context.putImageData(pxls, 0, 0);
+}
+
+function want(event) {
+  event.preventDefault();
+}
+
+function drop(event) {
+  event.preventDefault();
+
+  var data = event.dataTransfer;
+  if (!data || !data.files.length)
+    return;
+
+  var file = data.files[0];
+  if (!file || file.size > 1048576 ||
+      !~['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type))
+    return;
+  load(window.createBlobURL(file));
 }
 
 window.addEventListener('load', init, false);
