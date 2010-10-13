@@ -9,9 +9,9 @@ function init() {
   document.getElementById("radius-slider").addEventListener("change",
     function(event) {
       applyVignette(event.target.value / 100 * canvas.width,
-                    document.getElementById("deep-slider").value);
+                    document.getElementById("hard-slider").value);
     }, false);
-  document.getElementById("deep-slider").addEventListener("change",
+  document.getElementById("hard-slider").addEventListener("change",
     function(event) {
       applyVignette(
         document.getElementById("radius-slider").value / 100 * canvas.width,
@@ -46,12 +46,12 @@ function drawImages() {
   });
 }
 
-function applyVignette(rad, deep) {
+function applyVignette(rad, hard) {
   context.drawImage(canvas.image, 0, 0);
-  vignetteCircular(canvas.width / 2, canvas.height / 2, rad, deep);
+  vignetteCircular(canvas.width / 2, canvas.height / 2, rad, hard);
 }
 
-function vignetteCircular(cx, cy, rad, deep) {
+function vignetteCircular(cx, cy, rad, hard) {
   // Array of size width*height*4.
   // Each pixel has a separate RGBA byte in the array.
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -78,7 +78,7 @@ function vignetteCircular(cx, cy, rad, deep) {
       // Darken if outside the shadow bound.
       var diff = (dist - rad) / rad;
       if (diff > 0)
-        y *= Math.pow(Math.E, -1 * deep * 10 * diff * diff);
+        y *= Math.pow(Math.E, -1 * hard * 10 * diff * diff);
 
       // Convert back to RGB.
       r = y + 0.9563*i + 0.621*q;
@@ -103,8 +103,8 @@ function vignetteCircular(cx, cy, rad, deep) {
     Radius: 
     <input id="radius-slider" type="range" min="1" max="100"
            step="1" value="50">
-    Deepness? 
-    <input id="deep-slider" type="range" min="1" max="10"
+    Hardness: 
+    <input id="hard-slider" type="range" min="1" max="10"
            step="0.1" value="1">
   </div>
 </html>
