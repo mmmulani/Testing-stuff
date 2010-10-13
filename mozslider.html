@@ -9,15 +9,6 @@
     -moz-appearance: radio;
     -moz-user-select: none;
     width: 100px;
-    box-shadow: -48px 1px 0 -6px #555,
-                -36px 1px 0 -6px #555,
-                -24px 1px 0 -6px #555,
-                -12px 1px 0 -6px #555,
-                  0px 1px 0 -6px #555,
-                 12px 1px 0 -6px #555,
-                 24px 1px 0 -6px #555,
-                 36px 1px 0 -6px #555,
-                 48px 1px 0 -6px #555;
   }
 }
 </style>
@@ -28,6 +19,15 @@ onload = function() {
   slider.min = 0;
   slider.max = 100;
   slider.step = 1;
+  slider.draw = function() {
+    this.style.marginLeft = this.value - 50 + 'px';
+    this.style.marginRight = 50 - this.value + 'px';
+    var shadow = [];
+    for (var i = 2 - this.value; i < 100 - this.value; i += 12)
+      shadow.push(i + 'px 2px 0 -6px #555');
+    this.style.boxShadow = shadow.join();
+  };
+  slider.draw();
   slider.onfocus = function() {
     this.blur();
   };
@@ -45,12 +45,7 @@ onload = function() {
     this.value = this.v < this.min ? this.min :
                  this.v > this.max ? this.max : this.v;
     this.x = e.screenX;
-    this.style.marginLeft = this.value - 50 + 'px';
-    this.style.marginRight = 50 - this.value + 'px';
-    var shadow = [];
-    for (var i = 2 - this.value; i < 100 - this.value; i += 12)
-      shadow.push(i + 'px 1px 0 -6px #555');
-    this.style.boxShadow = shadow.join();
+    slider.draw();
   };
   slider.onmouseup = slider.onmouseout = function() {
     this.move = 0;
