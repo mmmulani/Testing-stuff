@@ -83,11 +83,8 @@ function lomo(e) {
 }
 
 function process(imageData, params) {
-  function Params(params) {
-    for (var param in params)
-      this[param] = params[param];
-  }
-  Params.prototype = {
+  // wish IE9 had read/write __proto__
+  var proto = {
     saturation:           1.0, // [0, 2]
     contrast:             1.0, // [0, 2]
     brightness:           1.0, // [0, 2]
@@ -100,7 +97,9 @@ function process(imageData, params) {
     highlightsSaturation: 0.0, // [0, 2]
     splitPoint:           0.0  // [-1, 1]
   }
-  ProcessImageData(imageData, new Params(params));
+  for (var param in params)
+    proto[param] = params[param];
+  ProcessImageData(imageData, proto);
 }
 
 function want(e) {
