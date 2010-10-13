@@ -1,3 +1,5 @@
 #!/bin/bash
-(sleep 3 ; open "http://localhost:8000/fryn.html") &
+export FILE=$1
+export FILE=${FILE:=fryn.html}
+(sleep 2 ; open "http://localhost:8000/$FILE") &
 python -m SimpleHTTPServer
