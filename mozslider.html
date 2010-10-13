@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>HTML5 Form Test</title>
+<title>HTML5 input[type=range] for Firefox 4</title>
 <style>
 @-moz-document url-prefix() {
   input[type=range] {
@@ -35,16 +35,16 @@ onload = function() {
     if (Math.abs(e.screenX - this.offsetLeft - 50) > 5)
       return
     this.move = 1;
-    this.x = e.screenX;
     this.v = this.value;
+    this.x = e.screenX;
   };
   slider.onmousemove = function(e) {
     if (!this.move)
       return;
     this.v -= this.x - e.screenX;
+    this.x = e.screenX;
     this.value = this.v < this.min ? this.min :
                  this.v > this.max ? this.max : this.v;
-    this.x = e.screenX;
     slider.draw();
   };
   slider.onmouseup = slider.onmouseout = function() {
