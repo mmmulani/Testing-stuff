@@ -2,14 +2,15 @@
   <head><title>Canvas stuff</title>
     <script>
 var imgs = [];
-var imgURLs = ["416152814_8f7ffb4bb1_z.jpg"];
+var imgURLs = ["511651674_04696b70a7_z.jpg"];
 var canvas, context;
 function init() {
   // Create controls and events for them.
   document.getElementById("radius-slider").addEventListener("change",
     function(event) {
-      applyVignette(event.target.value / 100 * canvas.width, 0);
-    });
+      applyVignette(event.target.value / 100 * canvas.width,
+                    document.getElementById("deep-slider").value);
+    }, false);
 
   // Init canvas related declarations.
   canvas = document.getElementById("main");
@@ -57,9 +58,30 @@ function vignetteCircular(cx, cy, rad, deep) {
       var ratio = w/h;
       var dx = (w/2) - px, dy = (h/2) - py;
       var dist = Math.sqrt((dx*dx) + ratio*ratio*(dy*dy));
+      var index = (py * w + px) * 4;
 
-      // The +3 offset is to touch the alpha byte of each pixel.
-      pixels.data[(py * w + px) * 4 + 3] = dist > rad ? 235 : 255;
+      var r = pixels.data[index + 0];
+      var g = pixels.data[index + 1];
+      var b = pixels.data[index + 2];
+
+      // Convert to the YIQ colourspace.
+      var y = 0.299*r + 0.587*g + 0.114*b;
+      var i = 0.595716*r - 0.274453*g - 0.321263*b;
+      var q = 0.211456*r - 0.522591*g + 0.311135*b;
+
+      // Darken if outside the shadow bound.
+      if (dist > rad)
+        y *= Math.pow((rad/dist), deep);
+
+      // Convert back to RGB.
+      r = y + 0.9563*i + 0.621*q;
+      g = y - 0.2721*i - 0.6473*q;
+      b = y - 1.1070*i + 1.7046*q;
+
+      pixels.data[index + 0] = r;
+      pixels.data[index + 1] = g;
+      pixels.data[index + 2] = b;
+      //pixels.data[index + 3] = dist > rad ? 235 : 255;
     }
   }
 
@@ -74,5 +96,7 @@ function vignetteCircular(cx, cy, rad, deep) {
     Radius: 
     <input id="radius-slider" type="range" min="1" max="100"
            step="1" value="50">
+    Deepness? 
+    <input id="deep-slider" type="range" min="1.0" max="4.0" value="1.0">
   </div>
 </html>
