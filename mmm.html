@@ -2,8 +2,19 @@
   <head><title>Canvas stuff</title>
     <script>
 var imgs = [];
-var imgURLs = ["http://farm1.static.flickr.com/162/416152814_8f7ffb4bb1_z.jpg"];
+var imgURLs = ["416152814_8f7ffb4bb1_z.jpg"];
+var canvas, context;
 function init() {
+  // Create controls and events for them.
+  document.getElementById("radius-slider").addEventListener("change",
+    function(event) {
+      applyVignette(event.target.value / 100 * canvas.width, 0);
+    });
+
+  // Init canvas related declarations.
+  canvas = document.getElementById("main");
+  context = canvas.getContext("2d");
+
   // Load images.
   imgURLs.map(function(val,i,arr) {
     var img = new Image();
@@ -20,14 +31,48 @@ function init() {
 }
 
 function drawImages() {
-  var ctx = document.getElementById("main").getContext("2d");
   imgs.forEach(function(img) {
-    ctx.drawImage(img,0,0);
+    canvas.height = img.naturalHeight;
+    canvas.width = img.naturalWidth;
+    canvas.image = img;
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
   });
+}
+
+function applyVignette(rad, deep) {
+  context.drawImage(canvas.image, 0, 0);
+  vignetteCircular(canvas.width / 2, canvas.height / 2, rad, deep);
+}
+
+function vignetteCircular(cx, cy, rad, deep) {
+  // Array of size width*height*4.
+  // Each pixel has a separate RGBA byte in the array.
+  var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+
+  var px,py;
+  var w = canvas.width, h = canvas.height;
+
+  for (py = 0; py < h; py++) {
+    for (px = 0; px < w; px++) {
+      var ratio = w/h;
+      var dx = (w/2) - px, dy = (h/2) - py;
+      var dist = Math.sqrt((dx*dx) + ratio*ratio*(dy*dy));
+
+      // The +3 offset is to touch the alpha byte of each pixel.
+      pixels.data[(py * w + px) * 4 + 3] = dist > rad ? 235 : 255;
+    }
+  }
+
+  context.putImageData(pixels, 0, 0);
 }
     </script>
   </head>
   <body onload="init()">
     <canvas id="main" width="800" height="800"></canvas>
   </body>
+  <div id="controls" style="width: 400px; padding: 10px !important">
+    Radius: 
+    <input id="radius-slider" type="range" min="1" max="100"
+           step="1" value="50">
+  </div>
 </html>
