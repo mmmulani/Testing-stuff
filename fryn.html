@@ -27,6 +27,8 @@ canvas {
 <script>
 'use strict';
 
+var MAX_FILE_SIZE = 2 * 1048576; // 2 MB
+
 function init() {
   var canvas = document.getElementById('canvas');
   canvas.addEventListener('click', lomo, false);
@@ -116,9 +118,12 @@ function drop(event) {
     return;
 
   var file = data.files[0];
-  if (!file || file.size > 1048576 ||
-      !~['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type))
+  if (!file)
     return;
+  if (file.size > MAX_FILE_SIZE)
+    return alert('File cannot be larger than 2 MB!');
+  if (!~['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type))
+    return alert('File must be an image!');
   if (window.createBlobURL)
     load(window.createBlobURL(file));
   else if (window.FileReader) {
