@@ -30,9 +30,9 @@ canvas {
 function init() {
   var canvas = document.getElementById('canvas');
   canvas.addEventListener('click', lomo, false);
-  canvas.addEventListener('dragenter', want, false);
-  canvas.addEventListener('dragover', want, false);
-  canvas.addEventListener('drop', drop, false);
+  document.body.addEventListener('dragenter', want, false);
+  document.body.addEventListener('dragover', want, false);
+  document.body.addEventListener('drop', drop, false);
   
   load('sf.png');
 }
@@ -41,7 +41,8 @@ function load(src, blob) {
   var image = new Image;
   image.onload = function() {
     draw(this);
-    window.revokeBlobURL(this.src);
+    if (window.revokeBlobURL)
+      window.revokeBlobURL(this.src);
   };
   image.src = src;
 }
@@ -50,8 +51,16 @@ function draw(image) {
   var canvas = document.getElementById('canvas');
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
+  if (canvas.width > innerWidth) {
+    canvas.height *= innerWidth / canvas.width;
+    canvas.width = innerWidth;
+  }
+  if (canvas.height > innerHeight) {
+    canvas.width *= innerHeight / canvas.height;
+    canvas.height = innerHeight;
+  }
   var context = canvas.getContext('2d');
-  context.drawImage(image, 0, 0);
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
   canvas.image = image;
   canvas.lomo = false;
 }
@@ -62,7 +71,7 @@ function lomo(event) {
     return;
 
   var context = canvas.getContext('2d');
-  context.drawImage(canvas.image, 0, 0);
+  context.drawImage(canvas.image, 0, 0, canvas.width, canvas.height);
 
   canvas.lomo = !canvas.lomo;
   // XXX hack for vignette
@@ -73,7 +82,7 @@ function lomo(event) {
   var pxls = context.getImageData(0, 0, canvas.width, canvas.height);
   
   // apply basic filters
-  ProcessImageData(pxls, { contrast: 1.2, saturation: 1.2, temperature: 300 });
+  ProcessImageData(pxls, { contrast: 1.2, saturation: 1.2, temperature: 200 });
 
   // so-so vignette
   var row, col;
@@ -95,6 +104,7 @@ function lomo(event) {
 }
 
 function want(event) {
+  //event.dataTransfer.dropEffect = 'copy';
   event.preventDefault();
 }
 
@@ -109,7 +119,15 @@ function drop(event) {
   if (!file || file.size > 1048576 ||
       !~['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type))
     return;
-  load(window.createBlobURL(file));
+  if (window.createBlobURL)
+    load(window.createBlobURL(file));
+  else if (window.FileReader) {
+    var reader = new FileReader();
+    reader.onload = function() {
+      load(this.result);
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 window.addEventListener('load', init, false);
