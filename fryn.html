@@ -14,13 +14,30 @@ body {
   vertical-align: middle;
   text-align: center;
   margin: 0;
-  font-size: 0;
+  font: 0 'Lucida Grande', Helvetica, sans-serif;
 }
 noscript {
-  font-size: 1em;
+  font-size: 16px;
 }
 canvas {
   cursor: crosshair;
+}
+.loaded {
+  box-shadow: 0 0 8px #000;
+  -webkit-box-shadow: 0 0 8px #000;
+}
+.error {
+  margin: -64px auto 0;
+  width: 768px;
+  height: 64px;
+  font-size: 16px;
+  line-height: 64px;
+  white-space: nowrap;
+  color: #fff;
+  background-color: rgba(0, 0, 0, .8);
+  border-radius: 32px;
+  -moz-transition: opacity .8s ease-out;
+  -webkit-transition: opacity .8s ease-out;
 }
 </style>
 <script src="darkroom.js"></script>
@@ -36,7 +53,7 @@ function init() {
   document.body.addEventListener('dragover', want, false);
   document.body.addEventListener('drop', drop, false);
   
-  load('sf.png');
+  load('sf.jpg');
 }
 
 function load(src, blob) {
@@ -51,23 +68,25 @@ function load(src, blob) {
 
 function draw(image) {
   var canvas = document.getElementById('canvas');
+  var maxWidth = innerWidth - 16, maxHeight = innerHeight - 16;
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
-  if (canvas.width > innerWidth) {
-    canvas.height *= innerWidth / canvas.width;
-    canvas.width = innerWidth;
+  if (canvas.width > maxWidth) {
+    canvas.height *= maxWidth / canvas.width;
+    canvas.width = maxWidth;
   }
-  if (canvas.height > innerHeight) {
-    canvas.width *= innerHeight / canvas.height;
-    canvas.height = innerHeight;
+  if (canvas.height > maxHeight) {
+    canvas.width *= maxHeight / canvas.height;
+    canvas.height = maxHeight;
   }
   var context = canvas.getContext('2d');
   context.drawImage(image, 0, 0, canvas.width, canvas.height);
   canvas.image = image;
   canvas.lomo = false;
+  canvas.className = 'loaded';
 }
 
-function lomo(event) {
+function lomo(e) {
   var canvas = document.getElementById('canvas');
   if (!canvas.image)
     return;
@@ -89,10 +108,8 @@ function lomo(event) {
   // so-so vignette
   var row, col;
   var w = canvas.width, h = canvas.height;
-  var x = event.clientX - canvas.offsetLeft;
-  var y = event.clientY - canvas.offsetTop;
-  x = (x - w / 2) / 16 + w / 2;
-  y = (y - h / 2) / 16 + h / 2;
+  var x = e ? (e.clientX - canvas.offsetLeft - w / 2) / 16 + w / 2 : w / 2;
+  var y = e ? (e.clientY - canvas.offsetTop - h / 2) / 16 + h / 2 : h / 2;
   for (row = 0; row < h; row++) {
     for (col = 0; col < w; col++) {
       pxls.data[(row * w + col) * 4 + 3] =
@@ -105,15 +122,17 @@ function lomo(event) {
   context.putImageData(pxls, 0, 0);
 }
 
-function want(event) {
-  //event.dataTransfer.dropEffect = 'copy';
-  event.preventDefault();
+function want(e) {
+  // XXX this seems to break drag-and-drop in Gecko
+  if (!~navigator.userAgent.indexOf('Gecko'))
+    e.dataTransfer.dropEffect = 'copy';
+  e.preventDefault();
 }
 
-function drop(event) {
-  event.preventDefault();
+function drop(e) {
+  e.preventDefault();
 
-  var data = event.dataTransfer;
+  var data = e.dataTransfer;
   if (!data || !data.files.length)
     return;
 
@@ -121,9 +140,9 @@ function drop(event) {
   if (!file)
     return;
   if (file.size > MAX_FILE_SIZE)
-    return alert('File cannot be larger than 2 MB!');
+    return err('File cannot be larger than 2 MB!');
   if (!~['image/jpeg', 'image/png', 'image/gif'].indexOf(file.type))
-    return alert('File must be an image!');
+    return err('File must be an image!');
   if (window.createBlobURL)
     load(window.createBlobURL(file));
   else if (window.FileReader) {
@@ -133,6 +152,20 @@ function drop(event) {
     };
     reader.readAsDataURL(file);
   }
+  else
+    err('Looks like your browser does not support file drag-and-drop. :(');
+}
+
+function err(msg) {
+  var div = document.body.appendChild(document.createElement('div'));
+  div.className = 'error';
+  div.textContent = msg;
+  setTimeout(function() {
+    div.style.opacity = 0;
+    setTimeout(function() {
+      document.body.removeChild(div);
+    }, 800);
+  }, 1200);
 }
 
 window.addEventListener('load', init, false);
@@ -145,6 +178,5 @@ window.addEventListener('load', init, false);
   instructions on how to enable JavaScript in your web browser</a>.
 </noscript>
 <canvas id="canvas"></canvas>
-<div></div>
 </body>
 </html>
