@@ -106,29 +106,51 @@ function lomo(e) {
 
   var pxls = context.getImageData(0, 0, canvas.width, canvas.height);
   
-  // apply basic filters
-  ProcessImageData(pxls, { contrast: 1.2, saturation: 1.2, temperature: 200 });
+  // apply basic processing
+  process(pxls, { contrast: 1.2, saturation: 1.2, temperature: 200 });
 
-  // so-so vignette
+  // TODO: rewrite this so-so vignette
   var row, col;
   var w = canvas.width, h = canvas.height;
   var x = e ? (e.clientX - canvas.offsetLeft - w / 2) / 16 + w / 2 : w / 2;
   var y = e ? (e.clientY - canvas.offsetTop - h / 2) / 16 + h / 2 : h / 2;
   for (row = 0; row < h; row++) {
     for (col = 0; col < w; col++) {
+      // modify the alpha channel
       pxls.data[(row * w + col) * 4 + 3] =
         (1 - Math.pow((col - x) / w * 2, 4)) *
         (1 - Math.pow((row - y) / h * 2, 4)) *
-        255 + 16;
+        255 + 16; // + 16 is just a lower bound
     }
   }
   
   context.putImageData(pxls, 0, 0);
 }
 
+function process(imageData, params) {
+  function Params(params) {
+    for (var param in params)
+      this[param] = params[param];
+  }
+  Params.prototype = {
+    saturation:           1.0, // [0, 2]
+    contrast:             1.0, // [0, 2]
+    brightness:           1.0, // [0, 2]
+    blackPoint:           0.0, // [0, 1]
+    fill:                 0.0, // [0, 1]
+    temperature:          0.0, // [-2000, 2000]
+    shadowsHue:           0.5, // [0, 1]
+    shadowsSaturation:    0.0, // [0, 2]
+    highlightsHue:        0.5, // [0, 1]
+    highlightsSaturation: 0.0, // [0, 2]
+    splitPoint:           0.0  // [-1, 1]
+  }
+  ProcessImageData(imageData, new Params(params));
+}
+
 function want(e) {
   // XXX this seems to break drag-and-drop in Gecko
-  if (!~navigator.userAgent.indexOf('Gecko'))
+  if (~navigator.userAgent.indexOf('WebKit'))
     e.dataTransfer.dropEffect = 'copy';
   e.preventDefault();
 }

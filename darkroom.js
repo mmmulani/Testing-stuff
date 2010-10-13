@@ -1,5 +1,7 @@
 // vlad's amazing stuff from
-// https://people.mozilla.com/~vladimir/demos/darkroom/darkroom.html
+// https://people.mozilla.com/~vladimir/demos/darkroom/darkroom.js
+
+// TODO: use WebGL typed arrays once they are supported
 
 function FastLog2(x) {
   return Math.log(x) / Math.LN2;
@@ -22,18 +24,17 @@ function Clamp(x) {
 }
 
 function ProcessImageData(imageData, params) {
-  // XXX needs better way to setting default params
-  var saturation = params.saturation || 1; // [0, 2]
-  var contrast = params.contrast || 1; // [0, 2]
-  var brightness = params.brightness || 1; // [0, 2]
-  var blackPoint = params.blackPoint || 0; // [0, 1]
-  var fill = params.fill || 0; // [0, 1]
-  var temperature = params.temperature || 0; // [-2000, 2000]
-  var shadowsHue = params.shadowsHue || .5; // [0, 1]
-  var shadowsSaturation = params.shadowsSaturation || 0; // [0, 2]
-  var highlightsHue = params.highlightsHue || .5; // [0, 1]
-  var highlightsSaturation = params.highlightsSaturation || 0; // [0, 2]
-  var splitPoint = params.splitPoint || 0; // [-1, 1]
+  var saturation = params.saturation;
+  var contrast = params.contrast;
+  var brightness = params.brightness;
+  var blackPoint = params.blackPoint;
+  var fill = params.fill;
+  var temperature = params.temperature;
+  var shadowsHue = params.shadowsHue;
+  var shadowsSaturation = params.shadowsSaturation;
+  var highlightsHue = params.highlightsHue;
+  var highlightsSaturation = params.highlightsSaturation;
+  var splitPoint = params.splitPoint;
 
   var brightness_a, brightness_b;
   var oo255 = 1.0 / 255.0;
