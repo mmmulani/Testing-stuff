@@ -34,6 +34,7 @@ canvas {
   line-height: 64px;
   white-space: nowrap;
   color: #fff;
+  background-color: #000;
   background-color: rgba(0, 0, 0, .8);
   border-radius: 32px;
   -moz-transition: opacity .8s ease-out;
@@ -48,6 +49,9 @@ var MAX_FILE_SIZE = 2 * 1048576; // 2 MB
 
 function init() {
   var canvas = document.getElementById('canvas');
+  if (!canvas.getContext)
+    return err('Looks like your browser does not support canvas. :(');
+
   canvas.addEventListener('click', lomo, false);
   document.body.addEventListener('dragenter', want, false);
   document.body.addEventListener('dragover', want, false);
@@ -168,7 +172,8 @@ function err(msg) {
   }, 1200);
 }
 
-window.addEventListener('load', init, false);
+if (window.addEventListener)
+  window.addEventListener('load', init, false);
 </script>
 </head>
 <body>

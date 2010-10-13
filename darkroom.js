@@ -22,6 +22,7 @@ function Clamp(x) {
 }
 
 function ProcessImageData(imageData, params) {
+  // XXX needs better way to setting default params
   var saturation = params.saturation || 1; // [0, 2]
   var contrast = params.contrast || 1; // [0, 2]
   var brightness = params.brightness || 1; // [0, 2]
