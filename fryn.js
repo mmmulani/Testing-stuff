@@ -150,3 +150,5 @@ function err(msg) {
 
 if (window.addEventListener)
   window.addEventListener('load', init, false);
+else
+  err('Looks like your browser is not supported. :(');

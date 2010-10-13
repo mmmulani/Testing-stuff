@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>HTML5 Form Test</title>
+<style>
+@-moz-document url-prefix() {
+  input[type=range] {
+    -moz-appearance: radio;
+    -moz-user-select: none;
+    width: 100px;
+    box-shadow: -48px 1px 0 -6px #555,
+                -36px 1px 0 -6px #555,
+                -24px 1px 0 -6px #555,
+                -12px 1px 0 -6px #555,
+                  0px 1px 0 -6px #555,
+                 12px 1px 0 -6px #555,
+                 24px 1px 0 -6px #555,
+                 36px 1px 0 -6px #555,
+                 48px 1px 0 -6px #555;
+  }
+}
+</style>
+<script type="text/javascript;version=1.8">
+onload = function() {
+  var slider = document.querySelector('input[type=range]');
+  slider.value = 50;
+  slider.min = 0;
+  slider.max = 100;
+  slider.step = 1;
+  slider.onfocus = function() {
+    this.blur();
+  };
+  slider.onmousedown = function(e) {
+    if (Math.abs(e.screenX - this.offsetLeft - 50) > 5)
+      return
+    this.move = 1;
+    this.x = e.screenX;
+    this.v = this.value;
+  };
+  slider.onmousemove = function(e) {
+    if (!this.move)
+      return;
+    this.v -= this.x - e.screenX;
+    this.value = this.v < this.min ? this.min :
+                 this.v > this.max ? this.max : this.v;
+    this.x = e.screenX;
+    this.style.marginLeft = this.value - 50 + 'px';
+    this.style.marginRight = 50 - this.value + 'px';
+    var shadow = [];
+    for (var i = 2 - this.value; i < 100 - this.value; i += 12)
+      shadow.push(i + 'px 1px 0 -6px #555');
+    this.style.boxShadow = shadow.join();
+  };
+  slider.onmouseup = slider.onmouseout = function() {
+    this.move = 0;
+  };
+};
+</script>
+</head>
+<body>
+<input type="range" />
+</body>
+</html>
