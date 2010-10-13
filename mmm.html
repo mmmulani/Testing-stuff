@@ -11,6 +11,12 @@ function init() {
       applyVignette(event.target.value / 100 * canvas.width,
                     document.getElementById("deep-slider").value);
     }, false);
+  document.getElementById("deep-slider").addEventListener("change",
+    function(event) {
+      applyVignette(
+        document.getElementById("radius-slider").value / 100 * canvas.width,
+        event.target.value);
+    }, false);
 
   // Init canvas related declarations.
   canvas = document.getElementById("main");
@@ -70,8 +76,9 @@ function vignetteCircular(cx, cy, rad, deep) {
       var q = 0.211456*r - 0.522591*g + 0.311135*b;
 
       // Darken if outside the shadow bound.
-      if (dist > rad)
-        y *= Math.pow((rad/dist), deep);
+      var diff = (dist - rad) / rad;
+      if (diff > 0)
+        y *= Math.pow(Math.E, -1 * deep * 10 * diff * diff);
 
       // Convert back to RGB.
       r = y + 0.9563*i + 0.621*q;
@@ -97,6 +104,7 @@ function vignetteCircular(cx, cy, rad, deep) {
     <input id="radius-slider" type="range" min="1" max="100"
            step="1" value="50">
     Deepness? 
-    <input id="deep-slider" type="range" min="1.0" max="4.0" value="1.0">
+    <input id="deep-slider" type="range" min="1" max="10"
+           step="0.1" value="1">
   </div>
 </html>
