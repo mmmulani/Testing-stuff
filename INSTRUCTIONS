@@ -1,0 +1,8 @@
+INSTALL
+-----------
+None needed.
+
+RUN
+-----------
+chmod +x run.sh (if it's not executable yet)
+then ./run.sh in the current directory.
