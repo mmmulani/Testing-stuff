@@ -16,7 +16,7 @@ window.addEventListener('load', function() {
   slider.min = 0;
   slider.value = 50;
 
-  // XXX stop the focus ring from appearing
+  // XXX stop the focus ring from distorting the box shadow
   slider.onfocus = function() {
     this.blur();
   };
@@ -57,9 +57,14 @@ window.addEventListener('load', function() {
   slider.onmousedown = function(e) {
     var mid = (this.min + this.max) / 2;
     var dev = this.value < mid ? mid - this.value : this.value - mid;
-    var diff = e.clientX - this.offsetLeft - dev - this.width / 2;
+    var x = e.clientX - this.offsetLeft;
+    var diff = x - dev - this.width / 2;
+    var valid = this.value < mid ? x > 2 * dev - 5 : x < this.width + 10;
     if (diff < -5 || diff > 5) {
-      this.value -= -diff;
+      this.v = this.value - -diff;
+      if (!valid)
+        return;
+      this.value = this.v;
       this.draw();
     }
     this.move = 1;
