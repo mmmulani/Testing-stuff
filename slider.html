@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>HTML5 input[type=range] support for Firefox 4</title>
+<style>
+body {
+  text-align: center;
+}
+@-moz-document url-prefix() {
+  input[type=range] {
+    -moz-appearance: radio;
+    -moz-user-select: none;
+    width: 100px;
+    cursor: default;
+  }
+}
+</style>
+<script src="slider.js"></script>
+</head>
+<body>
+<input type="range" />
+</body>
+</html>
