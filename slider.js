@@ -13,8 +13,6 @@ window.addEventListener('load', function() {
   if (!slider)
     return;
   slider.width = parseInt(getComputedStyle(slider, 0).width);
-  slider.min = 0;
-  slider.value = 50;
 
   // XXX stop the focus ring from distorting the box shadow
   slider.onfocus = function() {
@@ -29,7 +27,7 @@ window.addEventListener('load', function() {
     // if invalid, reset value to mean of min and max
     if (isNaN(this.value) || this.value === '')
       this.value = (this.min + this.max) / 2;
-    // implement step attribute
+    // snap to step intervals
     this.value = Math.round((this.value - this.min) / this.step);
     this.value = this.value * this.step + this.min;
     // clamp to [min, max]
@@ -58,12 +56,15 @@ window.addEventListener('load', function() {
     var mid = (this.min + this.max) / 2;
     var dev = this.value < mid ? mid - this.value : this.value - mid;
     var x = e.clientX - this.offsetLeft;
+    // distance between point of click and center of nub
     var diff = x - dev - this.width / 2;
+    // whether the point of click was within control bounds
     var valid = this.value < mid ? x > 2 * dev - 5 : x < this.width + 10;
+    if (!valid)
+      return;
+    // if click was not on nub, move nub to point of click
     if (diff < -5 || diff > 5) {
       this.v = this.value - -diff;
-      if (!valid)
-        return;
       this.value = this.v;
       this.draw();
     }
