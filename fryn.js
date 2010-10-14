@@ -11,7 +11,7 @@ function init() {
   document.body.addEventListener('dragenter', want, false);
   document.body.addEventListener('dragover', want, false);
   document.body.addEventListener('drop', drop, false);
-  
+
   load('sf.jpg');
 }
 
@@ -60,13 +60,14 @@ function lomo(e) {
     return;
 
   var pxls = context.getImageData(0, 0, canvas.width, canvas.height);
-  
+
   // apply basic processing
   process(pxls, { contrast: 1.2, saturation: 1.2, temperature: 200 });
 
   // TODO: rewrite this so-so vignette
   var row, col;
   var w = canvas.width, h = canvas.height;
+  // adjust position of vignette based on click location
   var x = e ? (e.clientX - canvas.offsetLeft - w / 2) / 16 + w / 2 : w / 2;
   var y = e ? (e.clientY - canvas.offsetTop - h / 2) / 16 + h / 2 : h / 2;
   for (row = 0; row < h; row++) {
@@ -78,7 +79,7 @@ function lomo(e) {
         255 + 16; // + 16 is just a lower bound
     }
   }
-  
+
   context.putImageData(pxls, 0, 0);
 }
 

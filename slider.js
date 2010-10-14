@@ -18,7 +18,7 @@ window.addEventListener('load', function() {
   slider.onfocus = function() {
     this.blur();
   };
-  
+
   slider.adjust = function() {
     // if invalid, reset min to 0, max to 100, step to 1
     this.min = isNaN(this.min) ? 0 : +this.min;
@@ -51,18 +51,20 @@ window.addEventListener('load', function() {
       shadow.push(i + 'px 0 0 #444');
     this.style.boxShadow = shadow.join();
   };
+
   slider.draw();
+
   slider.onmousedown = function(e) {
     var mid = (this.min + this.max) / 2;
     var dev = this.value < mid ? mid - this.value : this.value - mid;
     var x = e.clientX - this.offsetLeft;
-    // distance between point of click and center of nub
+    // distance between click and center of nub
     var diff = x - dev - this.width / 2;
-    // whether the point of click was within control bounds
+    // whether click was within control bounds
     var valid = this.value < mid ? x > 2 * dev - 5 : x < this.width + 10;
     if (!valid)
       return;
-    // if click was not on nub, move nub to point of click
+    // if click was not on nub, move nub to click location
     if (diff < -5 || diff > 5) {
       this.v = this.value - -diff;
       this.value = this.v;
@@ -72,6 +74,7 @@ window.addEventListener('load', function() {
     this.v = this.value;
     this.x = e.clientX;
   };
+
   slider.onmousemove = function(e) {
     if (!this.move)
       return;
@@ -80,6 +83,7 @@ window.addEventListener('load', function() {
     this.value = this.v;
     this.draw();
   };
+
   slider.onmouseup = slider.onmouseout = function() {
     this.move = 0;
   };
