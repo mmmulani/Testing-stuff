@@ -6,11 +6,17 @@
 <style>
 body {
   text-align: center;
+  overflow: hidden;
+}
+input[type=range] {
+  width: 200px;
+}
+input[type=range].x-thin {
+  width: 120px;
 }
 @-moz-document url-prefix() {
   input[type=range] {
     -moz-appearance: radio;
-    width: 100px;
     cursor: default;
   }
 }
@@ -19,5 +25,7 @@ body {
 </head>
 <body>
 <input type="range" />
+<br /><br />
+<input type="range" value="-60" min="-80" max="100" step="30" class="x-thin" />
 </body>
 </html>
