@@ -29,7 +29,7 @@ function create(slider) {
     if (!valid)
       return;
     // if click was not on nub, move nub to click location
-    if (diff < -5 || diff > 5) {
+    if (Math.abs(diff) > 5) {
       this.v = this.value - -diff / multiplier;
       this.value = this.v;
       this.draw();
@@ -37,11 +37,14 @@ function create(slider) {
     this.move = 1;
     this.v = this.value;
     this.x = e.clientX;
+    this.style.cursor = '-moz-grabbing';
   }
 
   function onDrag(e) {
-    if (!this.move)
+    if (!this.move) {
+      onHover.call(this, e);
       return;
+    }
     this.v -= (this.x - e.clientX) * (this.max - this.min) / this.width;
     this.x = e.clientX;
     this.value = this.v;
@@ -50,7 +53,22 @@ function create(slider) {
 
   function onDragEnd() {
     this.move = 0;
+    this.style.cursor = 'default';
   }
+
+  function onHover(e) {
+    var mid = (this.min + this.max) / 2;
+    var range = this.max - this.min;
+    var multiplier = this.width / range;
+    var dev = Math.abs(this.value - mid) * multiplier;
+    var x = e.clientX - this.offsetLeft;
+    var diff = x - this.width / 2 - dev;
+    var valid = this.value < mid ? x > 2 * dev - 5 : x < this.width + 10;
+    this.style.cursor = !valid || Math.abs(diff) > 5 ? 'default' : '-moz-grab';
+  }
+
+  slider.style.MozAppearance = 'radio';
+  slider.style.cursor = 'default';
 
   slider.width = parseInt(getComputedStyle(slider, 0).width);
   slider.min = '' + slider.getAttribute('min');
