@@ -52,6 +52,7 @@ function applyVignette(rad, hard) {
 
   vignetteCircular(yiqPixels, w, h, canvas.width / 2, canvas.height / 2,
                    rad, hard);
+  gaussianBlur(yiqPixels, w, h);
 
   pixels = yiq2rgba(yiqPixels, w, h);
   context.putImageData(pixels, 0, 0);
@@ -122,9 +123,38 @@ function vignetteCircular(pixels, w, h, cx, cy, rad, hard) {
   }
 }
 
+var _gaussian = [
+  [6.7e-7,2.292e-5,1.9117e-4,3.8771e-4,1.9117e-4,2.292e-5,6.7e-7],
+  [2.292e-5,7.8633e-4,6.55965e-3,1.330373e-2,6.55865e-3,7.8633e-4,2.292e-5],
+  [1.9117e-4,6.55965e-3,0.05472157,0.11098164,0.05472157,6.55965e-3,1.9117e-4],
+  [3.8771e-4,0.01330373,0.11098164,0.22508352,0.11098164,0.01330373,3.8711e-4],
+  [1.9117e-4,6.55965e-3,0.05472157,0.11098164,0.05472157,6.55965e-3,1.9117e-4],
+  [2.292e-5,7.8633e-4,6.55965e-3,1.330373e-2,6.55865e-3,7.8633e-4,2.292e-5],
+  [6.7e-7,2.292e-5,1.9117e-4,3.8771e-4,1.9117e-4,2.292e-5,6.7e-7]];
+
 function gaussianBlur(pixels, w, h) {
+  var newPixels = [];
   var px, py;
   for (py = 0; py < h; py++) {
-    
+    for (px = 0; px < w; px++) {
+      var gx = Math.max(0,3-px);
+      var gxl = 4+Math.min(3,w-px-1);
+      var gyl = 4+Math.min(3,h-py-1);
+
+      var total = 0;
+      var totalGaussian = 0;
+      for (; gx < gxl; gx++) {
+        for (var gy = Math.max(0,3-py); gy < gyl; gy++) {
+          var ax = px + (gx - 3);
+          var ay = py + (gy - 3);
+          totalGaussian += _gaussian[gy][gx];
+          total += _gaussian[gy][gx]*pixels[(ay * w + ax) * 3];
+        }
+      }
+      newPixels.push(total/totalGaussian);
+    }
   }
+
+  for (var i = 0; i < newPixels.length; i++)
+    pixels[i*3] = newPixels[i];
 }
