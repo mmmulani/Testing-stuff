@@ -45,49 +45,86 @@ function drawImages() {
 
 function applyVignette(rad, hard) {
   context.drawImage(canvas.image, 0, 0);
-  vignetteCircular(canvas.width / 2, canvas.height / 2, rad, hard);
-}
-
-function vignetteCircular(cx, cy, rad, hard) {
-  // Array of size width*height*4.
-  // Each pixel has a separate RGBA byte in the array.
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+  var yiqPixels = rgba2yiq(pixels.data);
 
-  var px,py;
   var w = canvas.width, h = canvas.height;
 
+  vignetteCircular(yiqPixels, w, h, canvas.width / 2, canvas.height / 2,
+                   rad, hard);
+
+  pixels = yiq2rgba(yiqPixels, w, h);
+  context.putImageData(pixels, 0, 0);
+}
+
+function rgba2yiq(data) {
+  //XXX: Alpha information is dropped.
+  var toRet = [];
+  for (var index = 0; index < data.length; index+=4) {
+    var r = data[index + 0];
+    var g = data[index + 1];
+    var b = data[index + 2];
+
+    // Convert to the YIQ colourspace.
+    var y = 0.299*r + 0.587*g + 0.114*b;
+    var i = 0.595716*r - 0.274453*g - 0.321263*b;
+    var q = 0.211456*r - 0.522591*g + 0.311135*b;
+
+    toRet.push(y,i,q);
+  }
+  return toRet;
+}
+
+function yiq2rgba(data, w, h) {
+  var pixels = context.createImageData(w,h);
+  var pixelIndex = 0;
+  for (var index = 0; index < data.length; index+=3) {
+    var y = data[index + 0];
+    var i = data[index + 1];
+    var q = data[index + 2];
+
+    var r = y + 0.9563*i + 0.621*q;
+    var g = y - 0.2721*i - 0.6473*q;
+    var b = y - 1.1070*i + 1.7046*q;
+
+    pixels.data[pixelIndex + 0] = r;
+    pixels.data[pixelIndex + 1] = g;
+    pixels.data[pixelIndex + 2] = b;
+    // Set alpha to 255.
+    pixels.data[pixelIndex + 3] = 255;
+
+    pixelIndex += 4;
+  }
+  return pixels;
+}
+
+function vignetteCircular(pixels, w, h, cx, cy, rad, hard) {
+  // Array of size width*height*3.
+  // Each pixel is stored as YIQ.
+
+  var px,py;
   for (py = 0; py < h; py++) {
     for (px = 0; px < w; px++) {
       var ratio = w/h;
       var dx = (w/2) - px, dy = (h/2) - py;
       var dist = Math.sqrt((dx*dx) + ratio*ratio*(dy*dy));
-      var index = (py * w + px) * 4;
+      var index = (py * w + px) * 3;
 
-      var r = pixels.data[index + 0];
-      var g = pixels.data[index + 1];
-      var b = pixels.data[index + 2];
-
-      // Convert to the YIQ colourspace.
-      var y = 0.299*r + 0.587*g + 0.114*b;
-      var i = 0.595716*r - 0.274453*g - 0.321263*b;
-      var q = 0.211456*r - 0.522591*g + 0.311135*b;
+      var y = pixels[index + 0];
 
       // Darken if outside the shadow bound.
       var diff = (dist - rad) / rad;
       if (diff > 0)
         y *= Math.pow(Math.E, -1 * hard * 10 * diff * diff);
 
-      // Convert back to RGB.
-      r = y + 0.9563*i + 0.621*q;
-      g = y - 0.2721*i - 0.6473*q;
-      b = y - 1.1070*i + 1.7046*q;
-
-      pixels.data[index + 0] = r;
-      pixels.data[index + 1] = g;
-      pixels.data[index + 2] = b;
-      //pixels.data[index + 3] = dist > rad ? 235 : 255;
+      pixels[index + 0] = y;
     }
   }
+}
 
-  context.putImageData(pixels, 0, 0);
+function gaussianBlur(pixels, w, h) {
+  var px, py;
+  for (py = 0; py < h; py++) {
+    
+  }
 }
