@@ -44,20 +44,20 @@ onload = function() {
   slider.draw();
   slider.onmousedown = function(e) {
     var deviation = this.value < 50 ? 50 - this.value : this.value - 50;
-    var diff = e.screenX - this.offsetLeft - deviation - 50;
+    var diff = e.clientX - this.offsetLeft - deviation - 50;
     if (diff < -5 || diff > 5) {
       this.value -= -diff;
       this.draw();
     }
     this.move = 1;
     this.v = this.value;
-    this.x = e.screenX;
+    this.x = e.clientX;
   };
   slider.onmousemove = function(e) {
     if (!this.move)
       return;
-    this.v -= this.x - e.screenX;
-    this.x = e.screenX;
+    this.v -= this.x - e.clientX;
+    this.x = e.clientX;
     this.value = this.v;
     slider.draw();
   };
