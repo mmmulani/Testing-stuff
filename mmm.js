@@ -4,16 +4,11 @@ var canvas, context;
 function init() {
   // Create controls and events for them.
   document.getElementById("radius-slider").addEventListener("change",
-    function(event) {
-      applyVignette(event.target.value / 100 * canvas.width,
-                    document.getElementById("hard-slider").value);
-    }, false);
+    applyVignette, false);
   document.getElementById("hard-slider").addEventListener("change",
-    function(event) {
-      applyVignette(
-        document.getElementById("radius-slider").value / 100 * canvas.width,
-        event.target.value);
-    }, false);
+    applyVignette, false);
+  document.getElementById("blur-slider").addEventListener("change",
+    applyVignette, false);
 
   // Init canvas related declarations.
   canvas = document.getElementById("main");
@@ -43,7 +38,12 @@ function drawImages() {
   });
 }
 
-function applyVignette(rad, hard) {
+function applyVignette() {
+  var rad = document.getElementById("radius-slider").value / 100 *
+            canvas.width;
+  var hard = document.getElementById("hard-slider").value;
+  var blur = document.getElementById("blur-slider").value;
+
   context.drawImage(canvas.image, 0, 0);
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
   var yiqPixels = rgba2yiq(pixels.data);
@@ -52,7 +52,8 @@ function applyVignette(rad, hard) {
 
   vignetteCircular(yiqPixels, w, h, canvas.width / 2, canvas.height / 2,
                    rad, hard);
-  gaussianBlur(yiqPixels, w, h);
+  if (blur >= 0.1)
+    gaussianBlur(yiqPixels, w, h, blur);
 
   pixels = yiq2rgba(yiqPixels, w, h);
   context.putImageData(pixels, 0, 0);
@@ -132,7 +133,15 @@ var _gaussian = [
   [2.292e-5,7.8633e-4,6.55965e-3,1.330373e-2,6.55865e-3,7.8633e-4,2.292e-5],
   [6.7e-7,2.292e-5,1.9117e-4,3.8771e-4,1.9117e-4,2.292e-5,6.7e-7]];
 
-function gaussianBlur(pixels, w, h) {
+function gaussianBlur(pixels, w, h, blur) {
+  for (var x = -3; x < 4; x++) {
+    for (var y = -3; y < 4; y++) {
+      _gaussian[x+3][y+3] = (1/(2*Math.PI*blur*blur))*
+        Math.pow(Math.E,(x*x+y*y)/(-2*blur*blur));
+    }
+  }
+
+
   var newPixels = [];
   var px, py;
   for (py = 0; py < h; py++) {
