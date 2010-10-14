@@ -4,36 +4,51 @@
 <meta charset="utf-8" />
 <title>HTML5 input[type=range] for Firefox 4</title>
 <style>
+body {
+  text-align: center;
+}
 @-moz-document url-prefix() {
   input[type=range] {
     -moz-appearance: radio;
     -moz-user-select: none;
     width: 100px;
+    cursor: default;
   }
 }
 </style>
 <script type="text/javascript;version=1.8">
 onload = function() {
+  if (!('boxShadow' in document.body.style))
+    return;
+
   var slider = document.querySelector('input[type=range]');
   slider.value = 50;
   slider.min = 0;
   slider.max = 100;
   slider.step = 1;
-  slider.draw = function() {
-    this.style.marginLeft = this.value - 50 + 'px';
-    this.style.marginRight = 50 - this.value + 'px';
-    var shadow = [];
-    for (var i = 2 - this.value; i < 100 - this.value; i += 12)
-      shadow.push(i + 'px 2px 0 -6px #555');
-    this.style.boxShadow = shadow.join();
-  };
-  slider.draw();
   slider.onfocus = function() {
     this.blur();
   };
+  slider.draw = function() {
+    this.value = this.value < this.min ? this.min :
+                 this.value > this.max ? this.max : this.value;
+    var deviation = this.value < 50 ? 50 - this.value : this.value - 50;
+    this.style.width = 100 + 2 * deviation + 'px';
+    this.style.marginLeft = this.value < 50 ? (this.value - 50) * 2 + 'px' : 0;
+    this.style.marginRight = this.value > 50 ? (50 - this.value) * 2 + 'px' : 0;
+    var shadow = [];
+    for (var i = -this.value; i <= 100 - this.value; i ++)
+      shadow.push(i + 'px 0 0 #444');
+    this.style.boxShadow = shadow.join();
+  };
+  slider.draw();
   slider.onmousedown = function(e) {
-    if (Math.abs(e.screenX - this.offsetLeft - 50) > 5)
-      return
+    var deviation = this.value < 50 ? 50 - this.value : this.value - 50;
+    var diff = e.screenX - this.offsetLeft - deviation - 50;
+    if (diff < -5 || diff > 5) {
+      this.value -= -diff;
+      this.draw();
+    }
     this.move = 1;
     this.v = this.value;
     this.x = e.screenX;
@@ -43,8 +58,7 @@ onload = function() {
       return;
     this.v -= this.x - e.screenX;
     this.x = e.screenX;
-    this.value = this.v < this.min ? this.min :
-                 this.v > this.max ? this.max : this.v;
+    this.value = this.v;
     slider.draw();
   };
   slider.onmouseup = slider.onmouseout = function() {
