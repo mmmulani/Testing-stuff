@@ -134,6 +134,7 @@ var _gaussian = [
   [6.7e-7,2.292e-5,1.9117e-4,3.8771e-4,1.9117e-4,2.292e-5,6.7e-7]];
 
 function gaussianBlur(pixels, w, h, blur) {
+  // Redefine _gaussian based on the blur parameter (acts as sigma).
   for (var x = -3; x < 4; x++) {
     for (var y = -3; y < 4; y++) {
       _gaussian[x+3][y+3] = (1/(2*Math.PI*blur*blur))*
@@ -141,6 +142,7 @@ function gaussianBlur(pixels, w, h, blur) {
     }
   }
 
+  var hw = w/2, hh = h/2;
 
   var newPixels = [];
   var px, py;
@@ -160,7 +162,13 @@ function gaussianBlur(pixels, w, h, blur) {
           total += _gaussian[gy][gx]*pixels[(ay * w + ax) * 3];
         }
       }
-      newPixels.push(total/totalGaussian);
+
+      // Modulate the blur effectiveness based on distance from the center.
+      var dist = (hw-px)*(hw-px) + (hh-py)*(hh-py);
+      var blurPercent = 1-Math.pow(1-dist/(hw*hw + hh*hh),4);
+      var pixelLum = (total/totalGaussian);
+      newPixels.push(pixels[(py * w + px) * 3] * (1-blurPercent) +
+                     pixelLum * blurPercent);
     }
   }
 
