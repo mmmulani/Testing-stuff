@@ -1,5 +1,5 @@
 Tools for us:
-  - slider controls for vignetting radius and shadow strength, @mmm
+  √ slider controls for vignetting radius and shadow strength, @mmm
   - zoom controls?
   - slider controls for saturation/contrast to test out colour stuff
 
@@ -9,4 +9,4 @@ Presentation improvements:
 Features:
   - fish-eye, @mmm
   - changing aspect ratio (e.g., to fake polaroids), @mmm
-  - blurring (to simulate holga), @mmm
+  √ blurring (to simulate holga), @mmm
