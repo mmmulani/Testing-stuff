@@ -36,12 +36,11 @@ var isMac = ~navigator.oscpu.indexOf(' OS X ');
 var thumb = {
   radius: isMac ? 9 : 6,
   width: isMac ? 22 : 12,
-  height: isMac ? 16 : 20 // mac w/ focused thumb sprite: 22px
+  height: isMac ? 16 : 20 // mac w/ focused thumb sprite would require 22px
 };
-var track = '-moz-linear-gradient(top, transparent ' +
-  (isMac ?
-    '6px, #999 6px, #999 7px, #ccc 9px, #bbb 11px, #bbb 12px, transparent 12px'
-    : '9px, #999 9px, #bbb 10px, #fff 11px, transparent 11px') +
+var track = '-moz-linear-gradient(top, transparent ' + (isMac ?
+  '6px, #999 6px, #999 7px, #ccc 9px, #bbb 11px, #bbb 12px, transparent 12px' :
+  '9px, #999 9px, #bbb 10px, #fff 11px, transparent 11px') +
   ', transparent)';
 var styles = {
   'font-size': 0, // -moz-user-select: none breaks onmousemove, so use this
@@ -59,7 +58,6 @@ if (document.readyState == 'loading')
   document.addEventListener('DOMContentLoaded', initialize, false);
 else
   initialize();
-document.addEventListener('DOMNodeInserted', onTheFly, false);
 
 function initialize() {
   // create slider affordance
@@ -72,15 +70,17 @@ function initialize() {
   document.mozSetImageElement('__sliderthumb__', scale);
   // create initial sliders
   Array.forEach(document.querySelectorAll('input[type=range]'), create);
+  // create sliders on-the-fly
+  document.addEventListener('DOMNodeInserted', onTheFly, false);
 }
 
-function onTheFly(e) {
+function onTheFly(e, async) {
   if (e.target.localName != 'input')
     return;
-  setTimeout(function(input) {
-    if (input.getAttribute('type') == 'range')
-      create(input);
-  }, 0, e.target);
+  if (e.target.getAttribute('type') == 'range')
+    create(e.target);
+  else if (!async)
+    setTimeout(onTheFly, 0, e, true);
 }
 
 function create(slider) {
@@ -141,9 +141,7 @@ function create(slider) {
 
   function onDragStart(e) {
     isClick = true;
-    setTimeout(function() {
-      isClick = false;
-    }, 0);
+    setTimeout(function() { isClick = false; }, 0);
     if (e.button || !range)
       return;
     var width = parseFloat(getComputedStyle(this, 0).width);
@@ -180,7 +178,6 @@ function create(slider) {
   function onDragEnd() {
     this.removeEventListener('mousemove', onDrag, false);
     this.removeEventListener('mouseup', onDragEnd, false);
-    prevX = NaN;
   }
 
   function onKeyDown(e) {
