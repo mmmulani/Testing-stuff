@@ -1,6 +1,7 @@
 var imgs = [];
 var imgURLs = ["511651674_04696b70a7_z.jpg"];
 var canvas, context;
+
 function init() {
   // Create controls and events for them.
   document.getElementById("radius-slider").addEventListener("change",
@@ -9,6 +10,8 @@ function init() {
     applyVignette, false);
   document.getElementById("blur-slider").addEventListener("change",
     applyVignette, false);
+  document.getElementById("crop-slider").addEventListener("change",
+    function() { drawCropBox(_prevCropEvent); }, false);
 
   // Init canvas related declarations.
   canvas = document.getElementById("main");
@@ -38,13 +41,28 @@ function drawImages() {
   });
 }
 
+function restoreCleanImage() {
+  if (croppedImage) {
+    canvas.width = _cropWidth;
+    canvas.height = _cropHeight;
+    context.drawImage(canvas.image, _cropLeft, _cropTop,
+                      _cropWidth, _cropHeight, 0, 0, _cropWidth, _cropHeight);
+  }
+  else {
+    canvas.width = canvas.image.naturalWidth;
+    canvas.height = canvas.image.naturalHeight;
+    context.drawImage(canvas.image, 0, 0);
+  }
+}
+
 function applyVignette() {
   var rad = document.getElementById("radius-slider").value / 100 *
             canvas.width;
   var hard = document.getElementById("hard-slider").value;
   var blur = document.getElementById("blur-slider").value;
 
-  context.drawImage(canvas.image, 0, 0);
+  restoreCleanImage();
+
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
   var yiqPixels = rgba2yiq(pixels.data);
 
@@ -174,4 +192,68 @@ function gaussianBlur(pixels, w, h, blur) {
 
   for (var i = 0; i < newPixels.length; i++)
     pixels[i*3] = newPixels[i];
+}
+
+function showCropControls() {
+  croppedImage = false;
+  restoreCleanImage();
+
+  // TODO: Add interface to drag on canvas to select center and box size.
+
+  canvas.addEventListener("mousemove", drawCropBox, false);
+  canvas.addEventListener("click", setCropBox, false);
+}
+
+function hideCropControls() {
+  canvas.removeEventListener("mousemove", drawCropBox, false);
+  canvas.removeEventListener("click", setCropBox, false);
+
+  document.getElementById("crop-box").style.display = "none";
+}
+
+// Store the previous event so we can accurately redraw the box after
+// changing its size.
+var _prevCropEvent;
+function drawCropBox(event) {
+  _prevCropEvent = event;
+  if (!event)
+    return;
+
+  var box = document.getElementById("crop-box");
+  var smallerSize = canvas.width < canvas.height ? canvas.width : canvas.height;
+  var size = document.getElementById("crop-slider").value * smallerSize / 100;
+
+  box.style.height = box.style.width = size + "px";
+
+  var left = Math.min(Math.max(canvas.offsetLeft, event.pageX - (size/2)),
+                      canvas.offsetLeft + canvas.offsetWidth - size);
+  var top = Math.min(Math.max(canvas.offsetTop, event.pageY - (size/2)),
+                     canvas.offsetTop + canvas.offsetHeight - size);
+
+  box.style.left = left-2 + "px";
+  box.style.top = top-2 + "px";
+
+  box.style.display = "block";
+}
+
+var croppedImage = false;
+var _cropLeft,_cropTop,_cropWidth,_cropHeight;
+function setCropBox(event) {
+  var smallerSize = canvas.width < canvas.height ? canvas.width : canvas.height;
+  var size = document.getElementById("crop-slider").value * smallerSize / 100;
+
+  var left = Math.min(Math.max(canvas.offsetLeft, event.pageX - (size/2)),
+                      canvas.offsetLeft + canvas.offsetWidth - size);
+  var top = Math.min(Math.max(canvas.offsetTop, event.pageY - (size/2)),
+                     canvas.offsetTop + canvas.offsetHeight - size);
+
+  _cropLeft = left;
+  _cropTop = top;
+  _cropWidth = _cropHeight = size;
+
+  croppedImage = true;
+
+  restoreCleanImage();
+
+  hideCropControls();
 }
