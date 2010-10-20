@@ -45,6 +45,7 @@ function restoreCleanImage() {
   if (croppedImage) {
     canvas.width = _cropWidth;
     canvas.height = _cropHeight;
+    console.log(_cropWidth + " " + _cropHeight);
     context.drawImage(canvas.image, _cropLeft, _cropTop,
                       _cropWidth, _cropHeight, 0, 0, _cropWidth, _cropHeight);
   }
@@ -68,8 +69,8 @@ function applyVignette() {
 
   var w = canvas.width, h = canvas.height;
 
-  vignetteCircular(yiqPixels, w, h, canvas.width / 2, canvas.height / 2,
-                   rad, hard);
+  vignetteCircular(yiqPixels, w, h, w/2, h/2, rad, hard);
+
   if (blur >= 0.1)
     gaussianBlur(yiqPixels, w, h, blur);
 
@@ -255,8 +256,8 @@ function setCropBox(event) {
   var top = Math.min(Math.max(canvas.offsetTop, event.pageY - (size/2)),
                      canvas.offsetTop + canvas.offsetHeight - size);
 
-  _cropLeft = left;
-  _cropTop = top;
+  _cropLeft = left - canvas.offsetLeft;
+  _cropTop = top - canvas.offsetTop;
   _cropWidth = _cropHeight = size;
 
   croppedImage = true;
