@@ -45,7 +45,6 @@ function restoreCleanImage() {
   if (croppedImage) {
     canvas.width = _cropWidth;
     canvas.height = _cropHeight;
-    console.log(_cropWidth + " " + _cropHeight);
     context.drawImage(canvas.image, _cropLeft, _cropTop,
                       _cropWidth, _cropHeight, 0, 0, _cropWidth, _cropHeight);
   }
