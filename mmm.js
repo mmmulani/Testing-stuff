@@ -181,12 +181,18 @@ function gaussianBlur(pixels, w, h, blur) {
         }
       }
 
+      var origLum = pixels[(py * w + px) * 3];
+
       // Modulate the blur effectiveness based on distance from the center.
       var dist = (hw-px)*(hw-px) + (hh-py)*(hh-py);
       var blurPercent = 1-Math.pow(1-dist/(hw*hw + hh*hh),4);
       var pixelLum = (total/totalGaussian);
-      newPixels.push(pixels[(py * w + px) * 3] * (1-blurPercent) +
-                     pixelLum * blurPercent);
+      var blurredLum = origLum * (1-blurPercent) + pixelLum * blurPercent;
+
+      // Further modulate based on original luminosity. The goal is to blur
+      // more near highlights.
+      var lumPercent = Math.pow(origLum/255, 1.2);
+      newPixels.push(blurredLum * (1-lumPercent) + origLum * lumPercent);
     }
   }
 
@@ -224,6 +230,8 @@ function drawCropBox(event) {
   var size = document.getElementById("crop-slider").value * smallerSize / 100;
 
   box.style.height = box.style.width = size + "px";
+
+  // XXX: Change to using getBoundingClientRect() instead of offset{Left,Top}.
 
   var left = Math.min(Math.max(canvas.offsetLeft, event.pageX - (size/2)),
                       canvas.offsetLeft + canvas.offsetWidth - size);
