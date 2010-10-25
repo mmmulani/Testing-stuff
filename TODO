@@ -1,0 +1,20 @@
+Tools for us:
+  - slider controls for vignetting radius and shadow strength, @mmm
+  - zoom controls?
+  - slider controls for saturation/contrast to test out colour stuff, @fryn
+
+Presentation improvements:
+  - black-box?
+
+Features:
+  - fish-eye, @mmm
+  - changing aspect ratio (e.g., to fake polaroids), @mmm
+  - blurring (to simulate holga), @mmm
+  - html5 drag-and-drop (file upload), @fryn
+
+Browser support:
+  - firefox 4+
+  - chrome 7+
+  - safari 5+ (no html5 file upload though)
+  - ie 9+
+  - opera?
