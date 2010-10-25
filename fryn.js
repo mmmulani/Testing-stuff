@@ -15,7 +15,7 @@ function init() {
   load('sf.jpg');
 }
 
-function load(src, blob) {
+function load(src) {
   var image = new Image;
   image.onload = function() {
     draw(this);
