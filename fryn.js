@@ -2,8 +2,10 @@
 
 var MAX_FILE_SIZE = 2 * 1048576; // 2 MB
 
+var canvas;
+
 function init() {
-  var canvas = document.getElementById('canvas');
+  canvas = document.getElementById('canvas');
   if (!canvas.getContext)
     return err('Looks like your browser does not support canvas. :(');
 
@@ -26,7 +28,6 @@ function load(src) {
 }
 
 function draw(image) {
-  var canvas = document.getElementById('canvas');
   var maxWidth = innerWidth - 16, maxHeight = innerHeight - 16;
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
@@ -46,7 +47,6 @@ function draw(image) {
 }
 
 function lomo(e) {
-  var canvas = document.getElementById('canvas');
   if (!canvas.image)
     return;
 
