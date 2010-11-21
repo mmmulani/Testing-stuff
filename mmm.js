@@ -1,3 +1,5 @@
+'use strict';
+
 var imgs = [];
 var imgURLs = ["imgs/2876463757_a920992b81_b.jpg"];
 var canvas, context;
