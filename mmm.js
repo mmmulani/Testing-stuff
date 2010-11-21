@@ -219,12 +219,7 @@ function crossProcess(pixels) {
     var x = val/128;
     // Scale d to down to lessen colour difference.
     var d = ((x*x) - x);
-    if (px > 128) {
-      return order ? 128 + (1+d)*val : 128 + (1-d)*val;
-    }
-    else {
-      return order ? (1+d)*px : (1-d)*px;
-    }
+    return (px-val) + (order ? (1+d) : (1-d))*val;
   }
 
   // Iterate over each pixel.
