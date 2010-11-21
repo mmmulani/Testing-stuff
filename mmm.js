@@ -63,22 +63,31 @@ function applyEffects() {
   var blur = document.getElementById("blur-slider").value;
   var toXP = document.getElementById("crossproc-toggle").checked;
 
+  _benchmark("aE", "starting alterEffects");
   restoreCleanImage();
+  _benchmark("aE", "restored clean image");
 
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
   var yiqPixels = rgba2yiq(pixels.data);
+  _benchmark("aE", "converted to yiq");
 
   var w = canvas.width, h = canvas.height;
 
   vignetteCircular(yiqPixels, w, h, w/2, h/2, rad, hard);
+  _benchmark("aE", "applied vignette");
 
-  if (blur >= 0.1)
+  if (blur >= 0.1) {
     gaussianBlur(yiqPixels, w, h, blur);
+    _benchmark("aE", "blurred");
+  }
 
   pixels = yiq2rgba(yiqPixels, w, h);
+  _benchmark("aE", "converted to rgba");
 
-  if (toXP)
+  if (toXP) {
     crossProcess(pixels.data);
+    _benchmark("aE", "cross processed");
+  }
 
   context.putImageData(pixels, 0, 0);
 }
@@ -305,4 +314,17 @@ function setCropBox(event) {
   restoreCleanImage();
 
   hideCropControls();
+}
+
+var _benchmarks = {};
+function _benchmark(name, message) {
+  if (typeof(_benchmarks[name]) == "undefined") {
+    _benchmarks[name] = (new Date()).getTime();
+    return;
+  }
+
+  var diff = (new Date()).getTime() - _benchmarks[name];
+  _benchmarks[name] = (new Date()).getTime();
+  if (typeof(console) != "undefined")
+    console.log(name + ": " + message + " " + (diff/1000) + "s");
 }
