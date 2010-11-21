@@ -1,15 +1,14 @@
 var imgs = [];
-var imgURLs = ["511651674_04696b70a7_z.jpg"];
+var imgURLs = ["imgs/2876463757_a920992b81_b.jpg"];
 var canvas, context;
 
 function init() {
   // Create controls and events for them.
-  document.getElementById("radius-slider").addEventListener("change",
-    applyEffects, false);
-  document.getElementById("hard-slider").addEventListener("change",
-    applyEffects, false);
-  document.getElementById("blur-slider").addEventListener("change",
-    applyEffects, false);
+  var effectsControls = ["radius-slider", "hard-slider", "blur-slider",
+                         "crossproc-toggle"];
+  for (var i = 0; i < effectsControls.length; i++)
+    document.getElementById(effectsControls[i]).addEventListener("change",
+      applyEffects, false);
   document.getElementById("crop-slider").addEventListener("change",
     function() { drawCropBox(_prevCropEvent); }, false);
 
@@ -62,11 +61,11 @@ function applyEffects() {
             canvas.width;
   var hard = document.getElementById("hard-slider").value;
   var blur = document.getElementById("blur-slider").value;
+  var toXP = document.getElementById("crossproc-toggle").checked;
 
   restoreCleanImage();
 
   var pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-  /* TESTING OUT CROSS PROCESSING ONLY
   var yiqPixels = rgba2yiq(pixels.data);
 
   var w = canvas.width, h = canvas.height;
@@ -77,9 +76,9 @@ function applyEffects() {
     gaussianBlur(yiqPixels, w, h, blur);
 
   pixels = yiq2rgba(yiqPixels, w, h);
-  */
 
-  crossProcess(pixels.data);
+  if (toXP)
+    crossProcess(pixels.data);
 
   context.putImageData(pixels, 0, 0);
 }
@@ -210,38 +209,34 @@ function gaussianBlur(pixels, w, h, blur) {
 // crossProcess: Apply a cross processing filter over image.
 // In-place modifies the pixels array, which is an RGBA pixel array.
 function crossProcess(pixels) {
+  // TODO: Up the contrast as well.
+
+  function changePixelLevel(px, order) {
+    // order == 0 => low then high
+    // order == 1 => high then low
+    order ^= +(px < 128);
+    var val = (px < 128) ? px : px - 128;
+    var x = val/128;
+    // Scale d to down to lessen colour difference.
+    var d = ((x*x) - x);
+    if (px > 128) {
+      return order ? 128 + (1+d)*val : 128 + (1-d)*val;
+    }
+    else {
+      return order ? (1+d)*px : (1-d)*px;
+    }
+  }
+
   // Iterate over each pixel.
   for (var i = 0; i < pixels.length; i += 4) {
     var r = pixels[i];
     var g = pixels[i+1];
     var b = pixels[i+2];
 
-    function changePixelLevel(px, order) {
-      // order == 0 => low then high
-      // order == 1 => high then low
-      order ^= +(px < 128);
-      var val = (px < 128) ? px : px - 128;
-      var x = val/128;
-      var d = ((x*x) - x)/2;
-      return order ? (1+d)*px : (1-d)*px;
-    }
-
     pixels[i] = changePixelLevel(r, 0);
     pixels[i+1] = changePixelLevel(g, 0);
     pixels[i+2] = changePixelLevel(b, 1);
   }
-  console.log(pixels[0] + " " + pixels[1]);
-}
-
-// HELPER FUNCTION SHOULD BE REMOVED.
-function changePixelLevel(px, order) {
-  // order == 0 => low then high
-  // order == 1 => high then low
-  order ^= +(px < 128);
-  var val = (px < 128) ? px : px - 128;
-  var x = val/128;
-  var d = ((x*x) - x)/2;
-  //return order ? (1+d)*px : (1-d)*px;
 }
 
 // clipPx may be unnecessary for pixel data used in a CanvasPixelArray.
