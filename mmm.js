@@ -1,7 +1,7 @@
 'use strict';
 
-var imgs = [];
-var imgURLs = ["imgs/2876463757_a920992b81_b.jpg"];
+// Image loaded by default.
+var img = "imgs/2876463757_a920992b81_b.jpg";
 var canvas, context;
 
 function init() {
@@ -14,32 +14,36 @@ function init() {
   document.getElementById("crop-slider").addEventListener("change",
     function() { drawCropBox(_prevCropEvent); }, false);
 
+  // Set up drag-and-drop events.
+  document.body.addEventListener("dragstart", dragEnter, false);
+  document.body.addEventListener("dragenter", dragEnter, false);
+  document.body.addEventListener("dragover", dragEnter, false);
+  document.body.addEventListener("drop", dragDrop, false);
+
   // Init canvas related declarations.
   canvas = document.getElementById("main");
   context = canvas.getContext("2d");
 
-  // Load images.
-  imgURLs.map(function(val,i,arr) {
-    var img = new Image();
-    img.onload = function () {
-      arr.shift();
-      // Case of all images done loading.
-      if (arr.length == 0) {
-        drawImages();
-      }
-    };
-    img.src = val;
-    imgs[i] = img;
-  });
+  // Load image.
+  loadImgFromURL(img);
 }
 
-function drawImages() {
-  imgs.forEach(function(img) {
-    canvas.height = img.naturalHeight;
-    canvas.width = img.naturalWidth;
-    canvas.image = img;
-    context.drawImage(img, 0, 0, canvas.width, canvas.height);
-  });
+function drawImage(img) {
+  // Clear the canvas first.
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  canvas.height = img.naturalHeight;
+  canvas.width = img.naturalWidth;
+  canvas.image = img;
+  context.drawImage(img, 0, 0, canvas.width, canvas.height);
+}
+
+function loadImgFromURL(url) {
+  var img = new Image();
+  img.onload = function() {
+    drawImage(img);
+  };
+  img.src = url;
 }
 
 function restoreCleanImage() {
@@ -318,6 +322,11 @@ function setCropBox(event) {
   hideCropControls();
 }
 
+function _log(a) {
+  if (typeof(console) != "undefined")
+    console.log(a);
+}
+
 var _benchmarks = {};
 function _benchmark(name, message) {
   if (typeof(_benchmarks[name]) == "undefined") {
@@ -327,6 +336,28 @@ function _benchmark(name, message) {
 
   var diff = (new Date()).getTime() - _benchmarks[name];
   _benchmarks[name] = (new Date()).getTime();
-  if (typeof(console) != "undefined")
-    console.log(name + ": " + message + " " + (diff/1000) + "s");
+  _log(name + ": " + message + " " + (diff/1000) + "s");
+}
+
+// Image drag and drop code.
+function dragEnter(e) {
+  e.preventDefault();
+}
+
+function dragDrop(e) {
+  e.preventDefault();
+
+  var data = e.dataTransfer;
+  // TODO: Add sanity checks.
+  var file = data.files[0];
+
+  // Should use createBlobURL/createObjectUrl?
+  if (typeof(window.FileReader) == "undefined")
+    return;
+
+  var rdr = new FileReader();
+  rdr.onload = function() {
+    loadImgFromURL(this.result);
+  };
+  rdr.readAsDataURL(file);
 }
